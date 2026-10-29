@@ -47,3 +47,28 @@ The prompt edits the way it does in your own terminal (iTerm2's *Natural Text Ed
 | ⌘ + ⌫ | Delete to the start of the line (Mac) |
 | ⌘ + ⌦ | Delete to the end of the line (Mac) |
 | ⌘ + ← / → | Jump to the start / end of the line (Mac) |
+
+## Gamepad
+
+The 3D office supports controllers exposed by the browser with the **standard** Gamepad API mapping (including Xbox and compatible PlayStation controllers). Connect it, focus the office tab and press a button. Use localhost or HTTPS; the browser may hide a controller until it is used. Non-standard mappings and the 2D `/lite` page are not supported.
+
+| Control | Office | Open window |
+| --- | --- | --- |
+| Left stick | Walk with proportional speed | Move focus up/down |
+| Right stick | Look / orbit | — |
+| A / Cross | Jump | Activate focused button / checkbox |
+| B / Circle | — | Close top window |
+| X / Square | Interact (E), hold/release to throw basketball | — |
+| Y / Triangle | Next worker needing attention | — |
+| LS click or RT | Run | RT scrolls down |
+| LB | Put down carried item | — |
+| RB | Prompt at the current desk | — |
+| View / Share | Controls help | — |
+| Start / Options | Open menu | Close top window |
+| D-pad up/down | — | Previous/next visible control |
+| D-pad left/right | — | Adjust selected dropdown / slider |
+| LT | — | Scroll up |
+
+A radial dead zone prevents stick drift, and looking is frame-rate independent. Movement stops while a window is open, a text field is active, the tab loses focus, or the controller disconnects. Keyboard and mouse remain available; the first active controller stays selected until it disconnects. A button held while connecting does not activate an action.
+
+Typing prompts, working in terminals and drawing still need a keyboard/mouse. Gamepad confirmation never sends Enter into a terminal; select a visible terminal key button deliberately or use the keyboard. Actions requiring a browser gesture (for example clipboard or microphone permission) may still need a click.

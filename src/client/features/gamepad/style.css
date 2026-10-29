@@ -1,0 +1,17 @@
+.gamepad-hint {
+  position: fixed;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 5;
+  max-width: calc(100vw - 24px);
+  padding: 7px 12px;
+  border-radius: 10px;
+  background: #fff4e4e6;
+  color: #303044;
+  font: 600 12px system-ui, sans-serif;
+  text-align: center;
+  pointer-events: none;
+}
+.gamepad-hint[hidden] { display: none; }
+#modal-root :focus-visible { outline: 3px solid #e58d38; outline-offset: 3px; }

@@ -32,6 +32,9 @@ export abstract class PlayerInput {
    */
   onClick: ((ndc: THREE.Vector2) => void) | null = null;
   protected keys = new Set<string>();
+  protected padKeys = new Set<string>();
+  protected padX = 0;
+  protected padY = 0;
   private drag: { x: number; y: number; moved: number } | null = null;
   /** Set when this browser won't lock the pointer; first person falls back to drag-to-look. */
   private lockFailed = false;
@@ -210,11 +213,33 @@ export abstract class PlayerInput {
 
   clearKeys() {
     this.keys.clear();
+    this.setGamepad(0, 0, []);
+  }
+
+  /** Native analog input, kept separate so releasing a pad never releases a keyboard key. */
+  setGamepad(x: number, y: number, held: readonly string[]) {
+    this.padX = x;
+    this.padY = y;
+    this.padKeys = new Set(held);
+  }
+
+  /** Radians, independent of frame rate and pointer lock. */
+  lookGamepad(dx: number, dy: number) {
+    if (!this.enabled || !this.mouseLook) return;
+    if (this.view === 'first') this.look(dx, dy);
+    else {
+      this.camYaw -= dx;
+      this.camPitch = THREE.MathUtils.clamp(this.camPitch + dy, 0.05, 1.3);
+    }
   }
 
   /** Whether any of these keys is held down (and you have the controls). */
   holding(...codes: string[]): boolean {
-    return this.enabled && codes.some((c) => this.keys.has(c));
+    return this.enabled && codes.some((c) => this.keys.has(c) || this.padKeys.has(c)
+      || ((c === 'KeyW' || c === 'ArrowUp') && this.padY < 0)
+      || ((c === 'KeyS' || c === 'ArrowDown') && this.padY > 0)
+      || ((c === 'KeyA' || c === 'ArrowLeft') && this.padX < 0)
+      || ((c === 'KeyD' || c === 'ArrowRight') && this.padX > 0));
   }
 
   /**

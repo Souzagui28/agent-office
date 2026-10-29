@@ -1,5 +1,8 @@
+import { normalizeSunshine } from './sunshine';
+
 /** Standard Gamepad API layout (Xbox / PlayStation face-button positions). */
 export interface Pad {
+  readonly id?: string;
   readonly index: number;
   readonly connected: boolean;
   readonly mapping: string;
@@ -30,8 +33,9 @@ export class PadState {
     this.primed = false;
   }
 
-  sample(pads: readonly (Pad | null)[]) {
-    const supported = pads.filter((p): p is Pad => !!p?.connected && p.mapping === 'standard');
+  sample(pads: readonly (Pad | null)[], linuxChromium = false) {
+    const supported = pads.filter((p): p is Pad => !!p?.connected && p.mapping === 'standard')
+      .map((p) => normalizeSunshine(p, linuxChromium));
     const active = supported.find((p) => p.index !== this.index && (p.buttons.some((_, i) => pressed(p, i)) || p.axes.some((a) => Math.abs(a) > 0.25)));
     const pad = supported.find((p) => p.index === this.index) ?? active ?? supported[0];
     if (!pad) { this.reset(); return undefined; }

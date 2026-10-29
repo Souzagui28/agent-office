@@ -50,6 +50,8 @@ The prompt edits the way it does in your own terminal (iTerm2's *Natural Text Ed
 
 ## Gamepad
 
+For Moonlight/Sunshine on Linux Chromium, the virtual Xbox Series `045e:0b13` layout is corrected before reading sticks and triggers. This prevents a released trigger (`-1`) from being interpreted as a permanent left turn. The correction is limited to Sunshine's named virtual device, four mapped axes and eighteen buttons; physical controllers and other browsers keep their standard mapping.
+
 The 3D office supports controllers exposed by the browser with the **standard** Gamepad API mapping (including Xbox and compatible PlayStation controllers). Connect it, focus the office tab and press a button. Use localhost or HTTPS; the browser may hide a controller until it is used. Non-standard mappings and the 2D `/lite` page are not supported.
 
 | Control | Office | Open window |

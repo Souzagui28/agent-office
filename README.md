@@ -364,6 +364,8 @@ deploy/coolify.sh ssh 'node /opt/agent-office/bin/agent-office.js accounts invit
 
 Standard gamepads are supported in the 3D office through the browser Gamepad API. Press a button after focusing the page. Left stick walks with analog speed, right stick looks; X/□ interacts, A/✕ jumps, Y/△ finds the next worker, and Start/Options opens the menu. D-pad navigates windows, A/✕ activates, B/○ closes, and LT/RT scrolls. Text entry and terminals still use a keyboard. See [gamepad controls](docs/controls.md#gamepad).
 
+Sunshine's virtual Xbox Series controller on Linux Chromium is normalized so released triggers cannot cause continuous camera rotation.
+
 | Key | Action |
 | --- | --- |
 | W A S D | Walk (hold Shift to run) |

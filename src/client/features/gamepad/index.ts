@@ -13,6 +13,7 @@ const ACTIONS: Readonly<Record<number, readonly [string, string]>> = {
 /** Native browser gamepads: analog movement/look, edge-triggered actions and modal navigation. */
 export function installGamepad(ctx: Ctx) {
   const state = new PadState();
+  const linuxChromium = /Linux/.test(navigator.platform) && /(?:Chrome|Chromium)\//.test(navigator.userAgent);
   let connected: number | undefined;
   let wasModal = false;
   const released = new Map<number, readonly [string, string]>();
@@ -42,7 +43,7 @@ export function installGamepad(ctx: Ctx) {
     if (document.hidden || !document.hasFocus()) { reset(); hint.hidden = true; return; }
     let pads: readonly (Gamepad | null)[];
     try { pads = navigator.getGamepads?.() ?? []; } catch { reset(); hint.hidden = true; return; }
-    const frame = state.sample(pads);
+    const frame = state.sample(pads, linuxChromium);
     if (!frame) { release(); connected = undefined; hint.hidden = true; return; }
     if (connected !== frame.pad.index) {
       release();

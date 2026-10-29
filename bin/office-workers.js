@@ -7,6 +7,7 @@
 // same as an MCP server on stdio, which the office hands the agents that take one. Plain Node, no
 // build step, no dependencies.
 
+import { ENGINEERING_PATHS, ENGINEERING_TOOLS, parseEngineeringArgs, engineeringTool } from './engineering-tools.js';
 import { realpathSync } from 'node:fs';
 import { createInterface } from 'node:readline';
 import { fileURLToPath } from 'node:url';
@@ -31,6 +32,9 @@ const USAGE = `Usage:
                                                 desk, from the worker's own branch, or by a Claude
                                                 Code worker running gh pr create
   office-workers pr --none [--worker <name|id>] take that pull request off the worker again
+  office-workers reports                        read reports from your engineering team
+  office-workers report                        report the actual result (stdin or --summary)
+  office-workers artifact <discipline>          read a stage artifact [--worker <id>]
   office-workers mcp                            serve these as MCP tools on stdio`;
 
 /** A mistake in how the command was called: the usage is shown with it. */
@@ -42,9 +46,9 @@ export const EFFORTS = ['low', 'medium', 'high', 'xhigh', 'max'];
 /** How long the office may take to come back when it's restarting (a dev reload, an upgrade). */
 const RETRY_MS = 6000;
 /** Sending several workers home waits on git for each; hiring may fetch from GitHub first. */
-const TIMEOUT_MS = { list: 15_000, tell: 15_000, pr: 45_000, hire: 90_000, home: 300_000 };
+const TIMEOUT_MS = { reports: 15000, report: 15000, artifact: 15000, list: 15_000, tell: 15_000, pr: 45_000, hire: 90_000, home: 300_000 };
 /** Where each call goes, under /office/workers. */
-const PATHS = { list: '', hire: '', home: '/home', tell: '/tell', pr: '/pr' };
+const PATHS = { ...ENGINEERING_PATHS, list: '', hire: '', home: '/home', tell: '/tell', pr: '/pr' };
 
 /**
  * Reads `--flag value` and `--flag=value` options, and the words that aren't options.
@@ -85,6 +89,9 @@ export function parseArgs(argv) {
   const [cmd, ...rest] = argv;
   const help = (a) => a === '-h' || a === '--help';
   if (cmd === undefined || cmd === 'help' || help(cmd) || rest.some(help)) return { cmd: 'help' };
+  let engineering;
+  try { engineering = parseEngineeringArgs(argv); } catch (e) { throw new UsageError(e.message); }
+  if (engineering) return engineering;
   if (cmd === 'mcp') {
     if (rest.length) throw new UsageError(`mcp takes no arguments (got ${rest.join(' ')})`);
     return { cmd: 'mcp' };
@@ -166,7 +173,7 @@ export function buildRequest(what, office, body) {
   const url = new URL(`${office.url}/office/workers${PATHS[what]}`);
   url.searchParams.set('worker', office.worker);
   const headers = { authorization: `Bearer ${office.token}` };
-  if (what === 'list') return { method: 'GET', url: url.href, headers, timeout: TIMEOUT_MS.list };
+  if (what === 'list' || what === 'reports') return { method: 'GET', url: url.href, headers, timeout: TIMEOUT_MS.list };
   return { method: 'POST', url: url.href, headers: { ...headers, 'content-type': 'application/json' }, body: JSON.stringify(body ?? {}), timeout: TIMEOUT_MS[what] };
 }
 
@@ -267,6 +274,7 @@ const MCP_VERSIONS = ['2025-11-25', '2025-06-18', '2025-03-26', '2024-11-05'];
 const WORKER_NOTE = 'A worker is named by its name (e.g. "Mochi") or its id, as list_workers shows them.';
 
 export const TOOLS = [
+  ...ENGINEERING_TOOLS,
   {
     name: 'list_workers',
     title: 'List workers',
@@ -371,6 +379,8 @@ const INSTRUCTIONS =
 /** Runs a tool; resolves to its text, and whether nothing it was asked came off, or throws with why it failed. */
 async function runTool(name, args, io) {
   const a = args && typeof args === 'object' ? args : {};
+  const engineering = await engineeringTool(name, a, call, io);
+  if (engineering) return engineering;
   if (name === 'list_workers') return { text: JSON.stringify(await call('list', undefined, io), null, 1) };
   if (name === 'hire_worker') {
     const answer = await call('hire', a, io);
@@ -495,6 +505,10 @@ export async function main(argv, io = {}) {
       if (stdin.isTTY) throw new UsageError(`Give the prompt on stdin (office-workers ${cmd.cmd} … <<'EOF' … EOF) or with --prompt "…"`);
       return readStdin(stdin);
     };
+    if (cmd.cmd === 'reports' || cmd.cmd === 'artifact' || cmd.cmd === 'report') {
+      const body = cmd.cmd === 'report' ? { summary: (await prompt()).trim() } : cmd.cmd === 'artifact' ? { discipline: cmd.discipline, ...(cmd.worker ? { worker: cmd.worker } : {}) } : undefined;
+      out(JSON.stringify(await call(cmd.cmd, body, ctx), null, 2)); return 0;
+    }
     if (cmd.cmd === 'list') {
       const view = await call('list', undefined, ctx);
       out(cmd.json ? JSON.stringify(view, null, 2) : formatWorkers(view));

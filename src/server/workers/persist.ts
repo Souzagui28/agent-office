@@ -1,3 +1,4 @@
+import { validAssignment } from '../../shared/engineering-team.js';
 // workers.json: every worker as the office last saw it, to pick them all back up after a restart.
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import type { AgentProvider, WorkerInfo, WorkerStatus, WorkerTask } from '../../shared/protocol.js';
@@ -18,6 +19,7 @@ const RUNNING = new Set<unknown>(['starting', 'idle', 'working', 'done', 'needs_
 /** Saves every worker; `stopping`: the office is closing for good, so nobody is in the middle of anything. */
 export function saveWorkers(file: string, workers: Iterable<Worker>, stopping: boolean) {
   const saved = [...workers].map(({ info, owner, tracker, state, hookToken, pty, bootBlocked, interrupted }) => ({
+    engineering: info.engineering,
     id: info.id,
     owner,
     kind: info.kind,
@@ -73,6 +75,7 @@ export function restoreWorkers(file: string, workers: Map<string, Worker>, defau
             : defaultProvider;
       const usage = providerAdapter(provider)?.usage;
       const info: WorkerInfo = {
+        engineering: validAssignment(s.engineering) ? s.engineering : undefined,
         id: s.id,
         kind: s.kind === 'shell' ? 'shell' : 'agent',
         provider,

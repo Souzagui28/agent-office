@@ -434,9 +434,13 @@ Every change to the app that lands on `main` is published as a GitHub release by
 Each building floor remains one project. Its full-size office contains five open
 engineering sectors around the original desk pods and services area: requirements,
 architecture, implementation, verification/validation, and operation. Each sector
-has distinct furnishings, a specialist with role-specific accessories and gestures,
-and access to the project's artifacts.
+has distinct furnishings and a usable specialist: Clara, Atlas, Pixel, Vera or
+Nilo. Start a real agent from the character or stage board; terminal, prompt,
+changes, resume, PR and send-home controls match ordinary desk workers. Chiefs
+can delegate to up to three smaller helpers wearing their sector's outfit.
 
 Press **J** for the floor plan, or **Alt + 1–5** to go directly to a sector. The
 existing elevator changes projects. Saved artifacts and process plaques remain
-scoped to the project. See [Engineering studio](docs/engineering-office.md).
+scoped to the project. **Quadro da etapa** shows objectives, inputs, editable
+checklists, canonical Markdown templates, team reports and human approval.
+Visiting sectors does not start agents. See [Engineering studio](docs/engineering-office.md).

@@ -1,3 +1,6 @@
+import { engineeringHook } from './engineering.js';
+import { delegate } from '../engineering/team.js';
+import { FlowError } from '../engineering/files.js';
 import type http from 'node:http';
 import { notLeaving } from '../leave-on-merge.js';
 import { findWorker, readHireRequest, readHomeRequest, readPrRequest, workerRow, type PullsView } from '../office-workers.js';
@@ -51,6 +54,7 @@ export async function officeWorkers(ctx: Ctx, req: http.IncomingMessage, res: ht
     return w && workerRow(w, view, me.id);
   };
   const action = url.pathname.slice('/office/workers'.length);
+  if (['/report', '/reports', '/artifact'].includes(action)) return engineeringHook(floor, me, req, res, action);
   if (req.method === 'GET' && !action) {
     const list = floor.workers.list();
     const free = nextFreeSeat((id) => floor.workers.deskOccupied(id), floor.plan.wing);
@@ -144,6 +148,13 @@ export async function officeWorkers(ctx: Ctx, req: http.IncomingMessage, res: ht
 
   const ask = readHireRequest(body, floor.project.agentProviders);
   if (typeof ask === 'string') return send(res, 400, { error: ask });
+  if (me.engineering) {
+    try {
+      const w = await delegate(floor, me, ask);
+      ctx.toastFloor(floor, `${me.name} delegou uma subtarefa para ${w.name}`);
+      return send(res, 200, { ok: true, worker: workerRow(w, view, me.id) });
+    } catch (e) { return send(res, e instanceof FlowError ? e.status : 500, { error: (e as Error).message }); }
+  }
   const desk = ask.desk ?? nextFreeSeat((id) => floor.workers.deskOccupied(id), floor.plan.wing)?.id;
   if (!desk) return send(res, 409, { error: 'Every desk and bean bag is taken: send someone home first' });
   // A model or effort is the office's default worker's unless it says whose.

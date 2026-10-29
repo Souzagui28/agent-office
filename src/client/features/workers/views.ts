@@ -1,3 +1,4 @@
+import { updateWorkerStyle } from '../../core/worker-style';
 /**
  * The workers as you see them: at their desks with their laptops (or up and about in the castle),
  * walking in to a meeting, packing up when they're sent home (or marched down to the dungeon), how
@@ -303,6 +304,7 @@ export function installWorkerViews(ctx: Ctx, core: CoreState, parts: WorkerViews
       const d = v.model.root.getWorldPosition(workerPos).distanceTo(player.pos);
       v.model.held = d < (v.model.held ? HOLD_LEAVE : HOLD_NEAR);
       v.model.update(dt, t);
+      updateWorkerStyle(v.model, store.workers.get(id)!, ctx.world().desks.get(v.deskId)!, dt, t);
       // A board agent's kiosk has no laptop to paint (see buildKiosk).
       if (!desk.station) v.laptop.update(dt, store.screens.get(id), Math.hypot(desk.x - camPos.x, desk.z - camPos.z));
     }

@@ -1,6 +1,7 @@
 // Workers at their desks: what they are, their worktrees and their terminals.
 
 import type { AgentEffort, AgentProvider } from './agents.js';
+import type { EngineeringAssignment } from '../engineering-team.js';
 import type { Usage } from './usage.js';
 
 export type WorkerStatus =
@@ -27,6 +28,7 @@ export interface WorkerTask {
 }
 
 export interface WorkerInfo {
+  engineering?: EngineeringAssignment;
   id: string;
   /** 'agent' runs the selected provider; 'shell' is a plain shared login shell. */
   kind: WorkerKind;

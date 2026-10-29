@@ -5,10 +5,10 @@ import { mesh, toon } from '../../world/toon';
 import { box, C, rod, tool } from './props';
 
 /** Shared character animation, distinct silhouettes and role-specific gestures. Only Vera wears a hat. */
-export function specialist(index: number) {
+export function specialist(index: number, existing?: Worker) {
   const d = DISCIPLINES[index];
-  const worker = new Worker(d.agent, d.color);
-  worker.setStatus('idle', false); worker.update(1, 0);
+  const worker = existing ?? new Worker(d.agent, d.color);
+  if (!existing) { worker.setStatus('idle', false); worker.update(1, 0); }
   worker.root.scale.setScalar([1.35, 1.45, 1.3, 1.38, 1.4][index]);
   const body = worker.root.children[0];
   const antenna = body.children.filter(c => c instanceof THREE.Mesh && c.position.y > 1);
@@ -72,8 +72,7 @@ export function specialist(index: number) {
     box(prop, 0, 0, 0, 0.3, 0.21, 0.035, '#243744'); box(prop, 0, 0, 0.025, 0.25, 0.16, 0.015, '#9de0d0');
   }
   const home = prop.position.clone();
-  return { worker, update(dt: number, t: number) {
-    worker.update(dt, t);
+  const afterUpdate = (t: number) => {
     for (const part of antenna) part.visible = false;
     const wave = Math.sin(t * [0.8, 0.45, 2.7, 0.7, 0.5][index]);
     if (index === 0) { prop.rotation.z = wave * 0.04; body.rotation.y += Math.sin(t * 0.3) * 0.06; }
@@ -82,7 +81,9 @@ export function specialist(index: number) {
     if (index === 3) { prop.position.x = home.x + wave * 0.09; prop.position.y = home.y + Math.cos(t * 0.7) * 0.04; }
     if (index === 4) prop.rotation.x = -0.18 + wave * 0.04;
     // Hold the signature object while the other arm notes, points, tinkers, inspects or checks a tablet.
+    if (worker.status === 'working') return;
     if (arms[0]) arms[0].rotation.x = -0.8;
     if (arms[1]) arms[1].rotation.x = -0.95 + wave * (index === 2 ? 0.2 : 0.06);
-  } };
+  };
+  return { worker, afterUpdate, update(dt: number, t: number) { worker.update(dt, t); afterUpdate(t); } };
 }

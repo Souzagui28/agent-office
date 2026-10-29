@@ -1,11 +1,13 @@
 import { DISCIPLINES, PROCESSES, engineeringArrival, engineeringZoneAt, initialEngineering, type EngineeringState } from '../../../shared/engineering';
 import type { Ctx } from '../../core/context';
 import type { Parts } from '../../core/parts';
-import { aside, hintTitle, key, onE } from '../../core/hint';
+import { aside, hintTitle, key } from '../../core/hint';
 import { store } from '../../state';
 import { isTyping } from '../../player';
 import { closeAllModals, h, modalOpen, openModal, toast } from '../../ui/dom';
-import { openPrompt } from '../../ui/prompt';
+import { createEngineeringTeam } from './team';
+import { openStage } from './flow/ui';
+import { flowRequest, type FlowView } from './flow/api';
 import { buildEngineering } from './world';
 import { openEngineering } from './ui';
 
@@ -16,6 +18,9 @@ export function installEngineering(ctx: Ctx, deps: Deps) {
   const studio = buildEngineering();
   ctx.scene.add(studio.group);
   ctx.office.colliders.push(...studio.colliders);
+  const team = createEngineeringTeam(ctx, studio);
+  const progress = (v: FlowView) => studio.setProgress(v.state);
+  const stage = (i: number) => void openStage(i, team, () => void edit(i), progress);
   const arrivals = new Map<string, ReturnType<typeof engineeringArrival>>();
   const states = new Map<string, EngineeringState>();
   const drafts = new Map<string, () => EngineeringState>();
@@ -31,7 +36,7 @@ export function installEngineering(ctx: Ctx, deps: Deps) {
   const nav = h('nav.engineering-nav', { 'aria-label': 'Setores do projeto', hidden: true }, plaque);
   const floorButtons = DISCIPLINES.map((d, i) => h('button.btn', { type: 'button', title: `Alt + ${i + 1} · ${d.name}`, onclick: () => go(i) }, `${i + 1} · ${d.icon} ${d.short}`));
   nav.append(...floorButtons,
-    h('button.btn', { type: 'button', onclick: () => void edit(Math.max(0, current)) }, '📖 Artefatos e processo'),
+    h('button.btn', { type: 'button', onclick: () => stage(Math.max(0, current)) }, '📋 Quadro da etapa'),
     h('button.btn', { type: 'button', onclick: leave }, '↩ Entrada do projeto'));
   const shortcut = h('select', { 'aria-label': 'Atalhos de setores' },
     h('option', { value: 'alt' }, 'Alt + 1–5'), h('option', { value: 'ctrlshift' }, 'Ctrl + Shift + 1–5'), h('option', { value: 'off' }, 'Atalhos desativados'));
@@ -45,7 +50,7 @@ export function installEngineering(ctx: Ctx, deps: Deps) {
       h('div.body', {}, h('p', {}, `Um projeto por andar · ${store.project?.name ?? 'Projeto atual'}`), h('div.engineering-floorplan', {}, ...DISCIPLINES.map((d, i) => h('button.btn', {
         type: 'button', onclick: () => { modal.close(); go(i); },
       }, `${i + 1} · ${d.icon} ${d.name}`))),
-      h('button.btn', { type: 'button', onclick: () => { modal.close(); void edit(Math.max(0, current)); } }, 'Artefatos e processo'),
+      h('button.btn', { type: 'button', onclick: () => { modal.close(); stage(Math.max(0, current)); } }, 'Quadro da etapa'),
       h('button.btn', { type: 'button', onclick: () => { modal.close(); leave(); } }, 'Entrada do projeto')));
     const modal = openModal(content);
     content.querySelector('button')?.focus();
@@ -110,29 +115,27 @@ export function installEngineering(ctx: Ctx, deps: Deps) {
           states.set(floor, data); refresh(); return data;
         },
         docs: () => deps.bookshelf.showBookshelf(),
-        task: (n, state) => prepareTask(n, state, floor),
+        task: (n, state) => team.start(n, `${state.objective}\n\n${state.notes[DISCIPLINES[n].id]}`),
       });
       drafts.set(floor, editor.state);
     } catch (e) { toast((e as Error).message, 'error'); }
     finally { loading = false; }
   }
-  function prepareTask(i: number, state: EngineeringState, floor: string) {
-    const d = DISCIPLINES[i];
-    const desk = ctx.plan().desks.find(x => !x.wing && !store.workerAtDesk(x.id));
-    if (!desk || deps.actions.officeIsFull()) return toast('Libere uma mesa do projeto para iniciar a tarefa.', 'warn');
-    openPrompt({ title: `${d.agent} · ${d.role}`, providerOption: true, worktreeOption: true,
-      subtitle: 'Revise a tarefa antes de iniciar. O personagem do setor é um guia visual; o agente real executará na mesa do projeto.',
-      initial: `Atue como ${d.role}. ${d.personality}\nProcesso: ${PROCESSES[state.process].name}; fase: ${state.phase}; iteração: ${state.iteration}.\nObjetivo: ${state.objective}\nRisco: ${state.risk}\n\nArtefatos atuais:\n${state.notes[d.id]}\n\nTrabalhe apenas no escopo desta disciplina. Registre resultados em docs/engineering/${d.id}.md. Explicite suposições, evidências e limites. Não declare concluído sem verificar os critérios de aceitação.`,
-      onSubmit(text, opts) {
-        if (store.floor !== floor || store.workerAtDesk(desk.id)) return toast('O projeto ou a disponibilidade da mesa mudou. Prepare a tarefa novamente.', 'warn');
-        deps.actions.hire(desk.id, text, opts.worktree, opts.provider, opts.model, opts.effort);
-      },
-    });
-  }
   ctx.interactions.define('engineering', {
     reach: 4,
-    hint: it => ({ k: it.label ?? '', parts: [hintTitle(it.label ?? 'Engenharia'), aside('Setores do mesmo andar'), key('E', 'Abrir')] }),
-    use: onE(it => it.deskId === 'elevator' ? selector() : void edit(Math.max(0, DISCIPLINES.findIndex(d => d.id === it.deskId)))),
+    hint: it => {
+      const [part, id] = (it.deskId ?? '').split(':');
+      const i = DISCIPLINES.findIndex(d => d.id === id);
+      if (part === 'lead' && i >= 0) return team.hint(i);
+      return { k: it.label ?? '', parts: [hintTitle(it.label ?? 'Etapa'), aside('Objetivo · entradas · passos · entregas'), key('E', 'Abrir quadro')] };
+    },
+    use: (it, action) => {
+      const [part, id] = (it.deskId ?? '').split(':');
+      const i = DISCIPLINES.findIndex(d => d.id === id);
+      if (i < 0) return;
+      if (part === 'lead') return team.use(i, action);
+      if (action === 'E') stage(i);
+    },
   });
   ctx.usables.add({ usable: () => studio.group.visible ? studio.interactables : [], pickable: () => studio.group });
   window.addEventListener('keydown', e => {
@@ -153,6 +156,9 @@ export function installEngineering(ctx: Ctx, deps: Deps) {
   };
   ctx.messages.on('welcome', recoverOldAnnex);
   ctx.messages.on('floor.enter', recoverOldAnnex);
-  store.on('floor', () => { if (store.floor) void fetchState(store.floor).then(refresh).catch(() => {}); });
+  store.on('floor', () => { if (store.floor) {
+    void fetchState(store.floor).then(refresh).catch(() => {});
+    void flowRequest<FlowView>(store.floor, 'flow').then(progress).catch(() => {});
+  } });
   refresh();
 }

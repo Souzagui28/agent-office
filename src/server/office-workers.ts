@@ -12,6 +12,7 @@ import { landedWork, notLeaving } from './leave-on-merge.js';
 
 /** One worker as an agent sees it: enough to pick the ones to send home, and say why. */
 export interface WorkerRow {
+  engineering?: WorkerInfo['engineering'];
   id: string;
   name: string;
   kind: 'agent' | 'shell';
@@ -70,6 +71,7 @@ export function workerRow(w: WorkerInfo, view: PullsView, me?: string): WorkerRo
   const task = clip(w.task ? `${w.task.name}: ${w.task.summary}` : w.prompt);
   const activity = clip(w.activity);
   return {
+    ...(w.engineering ? { engineering: w.engineering } : {}),
     id: w.id,
     name: w.name,
     kind: w.kind,
@@ -196,7 +198,7 @@ export const MCP_NAME = 'agent-office';
 /** What it needs from the worker's environment; Codex hands an MCP server only what it's told to. */
 const MCP_ENV = ['AGENT_OFFICE_HOOK_URL', 'AGENT_OFFICE_WORKER_ID', 'AGENT_OFFICE_HOOK_TOKEN'];
 /** Its tools that only look, which Claude Code workers may call without asking. */
-export const MCP_READ_ONLY = [`mcp__${MCP_NAME}__list_workers`];
+export const MCP_READ_ONLY = [`mcp__${MCP_NAME}__list_workers`, `mcp__${MCP_NAME}__list_reports`, `mcp__${MCP_NAME}__read_stage_artifact`];
 
 /**
  * Writes Claude Code's --mcp-config file for the MCP server (bin/office-workers.js `mcp`, run by the

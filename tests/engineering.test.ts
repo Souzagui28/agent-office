@@ -4,9 +4,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { EngineeringWorkspace } from '../src/server/engineering.js';
-import { DISCIPLINES, PROCESSES, engineeringArrival, initialEngineering, validEngineering } from '../src/shared/engineering.js';
-import { blockerAt, groundAt } from '../src/client/player/collide.js';
-import * as THREE from 'three';
+import { DISCIPLINES, PROCESSES, engineeringArrival, engineeringZoneAt, initialEngineering, validEngineering } from '../src/shared/engineering.js';
 
 function workspace(t: { after(fn: () => void): void }) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'engineering-'));
@@ -53,15 +51,17 @@ test('corrupt state and symbolic links are not silently overwritten', t => {
   fs.unlinkSync(file); fs.symlinkSync(path.join(dir, 'outside.json'), file);
   assert.throws(() => data.read()); assert.throws(() => data.save(initialEngineering()));
 });
-test('every instant arrival is on a distinct supported floor and clear of the tables', () => {
-  const heights = new Set<number>();
+test('all five sector arrivals stay within the original project floor, at ground level', () => {
+  const positions = new Set<string>();
   for (let i = 0; i < DISCIPLINES.length; i++) {
-    const at = engineeringArrival(i); heights.add(at.y);
-    assert.ok(at.y < 50, 'collision engine supports ground up to 50m');
-    const floor = { minX: at.x - 8, maxX: at.x + 8, minZ: -6, maxZ: 6, bottom: at.y - 0.36, top: at.y };
-    assert.equal(groundAt([floor], at.x, at.z, at.y), at.y);
-    assert.equal(blockerAt({ pos: new THREE.Vector3(at.x, at.y, at.z), colliders: [floor], grounded: true, stepOffset: 0 }, at.x, at.z, at.y), null);
+    const at = engineeringArrival(i); positions.add(`${at.x}:${at.z}`);
+    assert.equal(at.y, 0);
+    assert.ok(at.x > -18 && at.x < 18 && at.z > -13 && at.z < 13);
+    assert.equal(engineeringZoneAt(at.x, at.y, at.z), i);
   }
-  assert.equal(heights.size, DISCIPLINES.length);
+  assert.equal(positions.size, 5);
+  assert.equal(engineeringZoneAt(55, 33, 0), -1);
+  assert.equal(engineeringZoneAt(0, -3.6, 0), -1);
+  assert.equal(engineeringZoneAt(0, 3, 0), -1);
   assert.throws(() => engineeringArrival(-1)); assert.throws(() => engineeringArrival(5));
 });

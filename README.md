@@ -429,12 +429,14 @@ Every change to the app that lands on `main` is published as a GitHub release by
 
 [MIT](LICENSE)
 
-## Engineering floors
+## Engineering studio
 
-Open **🏗 Engenharia**, press **J**, or choose **Menu → Engenharia de software** to
-use five discipline rooms within one project. **Alt + 1–5** instantly changes floors
-and restores each room's position during the session. The rooms use the existing
-cartoon style, animated guides, document tables and illustrative diagram boards.
-Edit lifecycle/phase plaques and Markdown artifacts, save them per project, export
-notes, or prepare a scoped task for an actual office worker. See
-[Engineering floors](docs/engineering-office.md) for controls, persistence and limits.
+Each building floor remains one project. Its full-size office contains five open
+engineering sectors around the original desk pods and services area: requirements,
+architecture, implementation, verification/validation, and operation. Each sector
+has distinct furnishings, a specialist with role-specific accessories and gestures,
+and access to the project's artifacts.
+
+Press **J** for the floor plan, or **Alt + 1–5** to go directly to a sector. The
+existing elevator changes projects. Saved artifacts and process plaques remain
+scoped to the project. See [Engineering studio](docs/engineering-office.md).

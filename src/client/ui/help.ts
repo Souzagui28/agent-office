@@ -4,7 +4,7 @@
 import { IS_MAC } from './termkeys';
 
 export const HELP_ROWS: readonly (readonly [string, string])[] = [
-  ['J / Alt + 1–5', 'Engineering annex: instant discipline floors. Open 🏗 Engenharia for artifacts, lifecycle, agent tasks and shortcut preferences.'],
+  ['J / Alt + 1–5', 'Engineering sectors on the current project floor. J opens the floor plan; Alt+1–5 goes directly to a sector. Each project keeps its own artifacts.'],
   ['🎮 Gamepad', 'Native controller: LS walks, RS looks, A/✕ jumps, X/□ interacts, Y/△ finds the next worker, LB drops and RB prompts. Nearby blue hints show controller keycaps after you use the pad; keyboard/mouse restores keyboard hints. D-pad: left Changes, right PR, up Resume, down Label when offered; R3 opens all contextual actions. B/○ cancels; Start opens the menu. In windows, D-pad navigates, A selects, B closes and triggers scroll. Select a text field with A for the controller keyboard. BLOCKFALL: D-pad moves, A drops, X turns, Y reverses, LB holds and RB pauses.'],
   ['W A S D', 'Walk (hold Shift to run)'],
   ['Space', 'Jump'],

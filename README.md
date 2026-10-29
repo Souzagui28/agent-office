@@ -428,3 +428,13 @@ Every change to the app that lands on `main` is published as a GitHub release by
 ## License
 
 [MIT](LICENSE)
+
+## Engineering floors
+
+Open **🏗 Engenharia**, press **J**, or choose **Menu → Engenharia de software** to
+use five discipline rooms within one project. **Alt + 1–5** instantly changes floors
+and restores each room's position during the session. The rooms use the existing
+cartoon style, animated guides, document tables and illustrative diagram boards.
+Edit lifecycle/phase plaques and Markdown artifacts, save them per project, export
+notes, or prepare a scoped task for an actual office worker. See
+[Engineering floors](docs/engineering-office.md) for controls, persistence and limits.

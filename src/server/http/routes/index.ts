@@ -2,6 +2,7 @@
 // come in that order (see http/router.ts). The public ones are tried first, then the sign-in check,
 // then the rest; the last one answers every path left with the client bundle, or a 404.
 import type { Route } from '../router.js';
+import { engineeringRoute } from './engineering.js';
 import { agentRoutes } from './agents.js';
 import { authRoutes } from './auth.js';
 import { fileRoutes } from './files.js';
@@ -28,6 +29,7 @@ export const routes: readonly Route[] = [
   // Signed in.
   authRoutes.whoami,
   agentRoutes.models,
+  engineeringRoute,
   fileRoutes.image,
   fileRoutes.whiteboardFile,
   fileRoutes.termDrop,

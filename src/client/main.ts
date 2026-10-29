@@ -25,6 +25,7 @@ import { installArrival } from './core/arrival';
 import { installMaps } from './core/maps';
 import { installHintBar } from './core/hintbar';
 import { installKeyboard, installKeyGuards } from './input/keyboard';
+import { installEngineering } from './features/engineering';
 import { installGamepad } from './features/gamepad';
 import { installFocus } from './input/focus';
 import { installPointer } from './input/pointer';
@@ -181,6 +182,7 @@ installChat(ctx);
 parts.talk = installVoice(ctx, { tv: parts.tv });
 installDictation(ctx);
 parts.hud = installHud(ctx, core, parts);
+installEngineering(ctx, parts);
 
 // ---- Main loop ---------------------------------------------------------------------------------------
 fitWindow(ctx);

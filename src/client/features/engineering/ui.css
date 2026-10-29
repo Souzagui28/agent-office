@@ -1,0 +1,30 @@
+.engineering-nav { position: fixed; z-index: 25; left: 14px; bottom: 58px; display: grid; gap: 5px; width: 210px; padding: 10px; background: #fffaf3ee; border: 3px solid #2b2d42; border-radius: 15px; box-shadow: 0 4px 0 #2b2d4230; font-size: 12px; }
+.engineering-nav[hidden] { display: none; }
+.engineering-nav .btn { text-align: left; padding: 7px 9px; font-size: 12px; }
+.engineering-nav .btn[aria-current="true"] { background: #dcefe5; box-shadow: inset 4px 0 #40a878; }
+.engineering-nav .engineering-plaque { padding: 4px; display: grid; gap: 3px; overflow-wrap: anywhere; }
+.engineering-nav .engineering-plaque small { color: #596170; }
+.engineering-launch { position: fixed; z-index: 25; left: 210px; bottom: 14px; }
+.engineering-modal { width: min(1100px, 96vw); }
+.engineering-modal > .body { max-height: 70vh; overflow: auto; }
+.engineering-modal label { font-weight: 800; font-size: 12px; }
+.engineering-process { display: grid; grid-template-columns: 2fr 2fr 1fr; gap: 10px; }
+.engineering-process label, .engineering-field { display: grid; gap: 4px; margin-bottom: 8px; }
+.engineering-field input, .engineering-process input, .engineering-process select { width: 100%; min-width: 0; }
+.engineering-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin: 15px 0; }
+.engineering-tabs [aria-pressed="true"] { background: #dcefe5; }
+.engineering-editor { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.engineering-editor textarea { width: 100%; min-height: 300px; resize: vertical; font: 13px/1.6 ui-monospace, monospace; }
+.engineering-preview { height: 330px; overflow: auto; border: 2px solid #ddd5c8; border-radius: 9px; padding: 12px; background: #fffdf8; }
+.engineering-preview img { max-width: 100%; }
+.engineering-pane[hidden] { display: none; }
+.engineering-modal footer { flex-wrap: wrap; gap: 8px; }
+.engineering-modal footer [role="status"] { flex: 1 1 200px; font-size: 12px; }
+@media (max-width: 700px) { .engineering-editor, .engineering-process { grid-template-columns: 1fr; } .engineering-nav { width: 175px; max-height: 55vh; overflow: auto; } }
+@media (prefers-reduced-motion: reduce) { .engineering-nav, .engineering-modal { transition: none; animation: none; } }
+
+.engineering-selector { display: grid; gap: 8px; }
+
+.engineering-modal input, .engineering-modal select, .engineering-modal textarea { border: 2px solid var(--ink); border-radius: 8px; background: #fffdf8; color: var(--ink); padding: 7px 9px; font: inherit; }
+.engineering-modal select { font-size: 13px; }
+.engineering-modal .engineering-editor textarea { font: 13px/1.6 ui-monospace, monospace; }

@@ -34,14 +34,40 @@ export interface NotifyState {
  * The office's machine (see server/machine.ts): how busy it is, for the wall monitor and a warning
  * before hiring, and the most workers the office runs at once, across every floor.
  */
+export interface StorageState {
+  /** Filesystem holding the office's project/data directory; sizes are bytes. */
+  total: number;
+  used: number;
+  available: number;
+  sampledAt: number;
+}
+
+export interface GpuState {
+  index: number;
+  name: string;
+  utilization?: number;
+  memoryUsed?: number;
+  memoryTotal?: number;
+  temperature?: number;
+  powerDraw?: number;
+  powerLimit?: number;
+  fan?: number;
+  sampledAt: number;
+}
+
 export interface MachineState {
-  /** Percent of every core busy, 0-100, over the last few seconds. */
+  /** Percent of every core busy, 0-100, over the last sample interval. */
   cpu: number;
   cores: number;
   /** Memory in use and in all, bytes. */
   memUsed: number;
   memTotal: number;
-  /** The last few minutes, oldest first: [cpu %, memory %] a few seconds apart. */
+  storage?: StorageState;
+  gpus?: GpuState[];
+  gpuStatus?: 'live' | 'stale' | 'unavailable';
+  /** Actual live sample cadence, in milliseconds. */
+  sampleMs?: number;
+  /** The last few minutes, oldest first: [cpu %, memory %] half a second apart. */
   history: [number, number][];
   /** What makes another worker a strain right now, e.g. "memory is 93% used"; missing when nothing does. */
   pressure?: string;

@@ -360,6 +360,10 @@ deploy/coolify.sh ssh 'node /opt/agent-office/bin/agent-office.js accounts invit
 
 **Removing someone.** Revoke their account in **🔑 Accounts** (or `agent-office accounts revoke <name>`), and on a server also remove them in **👥 Invite teammates** (on AWS, `deploy/aws.sh uninvite <name>`; on Railway, `deploy/railway.sh uninvite <name>`; on Fly.io, `deploy/fly.sh uninvite <name>`; on Dokploy, `deploy/dokploy.sh uninvite <name>`; on Coolify, `deploy/coolify.sh uninvite <name>`) to take away their SSH keys and drop open tunnels (other teammates just reconnect). If the shared password is still on, change it with `deploy/aws.sh reset-password` (or `deploy/railway.sh reset-password`, `deploy/fly.sh reset-password`, `deploy/dokploy.sh reset-password` or `deploy/coolify.sh reset-password`).
 
+## Live hardware monitor
+
+The existing wall monitor shows CPU, RAM, available project-disk space and NVIDIA GPU telemetry (utilization, VRAM, temperature, power and fan). CPU/RAM/GPU update every 0.5 seconds; disk space updates every 30 seconds. GPU collection uses one persistent `nvidia-smi` process, and unavailable or stale readings are labeled. See [machine monitor](docs/features.md#machine-monitor).
+
 ## Controls
 
 Standard gamepads are supported in the 3D office through the browser Gamepad API. Contextual blue hints switch between keyboard and controller keycaps with your last input. X/□ interacts, A/✕ jumps, R3 opens the current object's actions (including worker changes, PRs, labels and send home), B/○ cancels, and Start/Options opens the menu. D-pad navigates windows; A selects a text field to open an on-screen controller keyboard. See [gamepad controls](docs/controls.md#gamepad).

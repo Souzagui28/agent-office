@@ -59,18 +59,25 @@ The 3D office supports controllers exposed by the browser with the **standard** 
 | Left stick | Walk with proportional speed | Move focus up/down |
 | Right stick | Look / orbit | — |
 | A / Cross | Jump | Activate focused button / checkbox |
-| B / Circle | — | Close top window |
+| B / Circle | Cancel current activity | Close top window |
 | X / Square | Interact (E), hold/release to throw basketball | — |
 | Y / Triangle | Next worker needing attention | — |
 | LS click or RT | Run | RT scrolls down |
 | LB | Put down carried item | — |
 | RB | Prompt at the current desk | — |
-| View / Share | Controls help | — |
+| R3 click | Contextual actions menu | — |
+| View / Share | Controls help / car horn | — |
 | Start / Options | Open menu | Close top window |
-| D-pad up/down | — | Previous/next visible control |
-| D-pad left/right | — | Adjust selected dropdown / slider |
+| D-pad up/down | Resume / Label when offered; resize pictures while hanging | Previous/next visible control |
+| D-pad left/right | Changes / PR when offered | Adjust dropdown / slider, otherwise move focus |
 | LT | — | Scroll up |
 
 A radial dead zone prevents stick drift, and looking is frame-rate independent. Movement stops while a window is open, a text field is active, the tab loses focus, or the controller disconnects. Keyboard and mouse remain available; the first active controller stays selected until it disconnects. A button held while connecting does not activate an action.
 
-Typing prompts, working in terminals and drawing still need a keyboard/mouse. Gamepad confirmation never sends Enter into a terminal; select a visible terminal key button deliberately or use the keyboard. Actions requiring a browser gesture (for example clipboard or microphone permission) may still need a click.
+Selecting a text field with A opens an on-screen controller keyboard. Apply text only updates the field; sending remains a separate action. Raw terminal typing and freehand drawing still use keyboard/mouse. Gamepad confirmation never sends Enter into a terminal; select a visible terminal key button deliberately or use the keyboard. Actions requiring a browser gesture (for example clipboard or microphone permission) may still need a click.
+
+### Contextual controller hints
+
+There is no permanent controller banner. The existing blue hint appears only near something usable or during an activity, with the same keycap style as keyboard hints. Using the pad switches its labels; using a real key or mouse switches back. Secondary actions such as Shell, Send home or the throne herald are collected under **R3 More actions**. The action menu uses the current hint's real commands and waits for the world target to be restored after closing, so actions apply to the correct desk.
+
+D-pad shortcuts only run when offered at the current object. For picture placement, X hangs, B cancels and D-pad up/down changes size. The telescope supports RS looking and B/X exit. BLOCKFALL uses the D-pad or LS for movement, A for dropping, X for turning, Y for reverse turn, LB for hold, RB for pause and B to exit.

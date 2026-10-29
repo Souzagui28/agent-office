@@ -3,15 +3,16 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import type { MachineState } from '../shared/protocol.js';
+import { HardwareSampler } from './hardware.js';
 
 /** How often the CPU and memory are read. */
-const SAMPLE_MS = 5_000;
+const SAMPLE_MS = 500;
 /** How many readings the wall monitor graphs: the last five minutes. */
-const HISTORY = 60;
+const HISTORY = 600;
 /** Memory this full, or the CPU this busy over the last CPU_WINDOW readings (30 s), is a machine under pressure. */
 const MEM_PRESSURE = 90;
 const CPU_PRESSURE = 90;
-const CPU_WINDOW = 6;
+const CPU_WINDOW = 60;
 /** The highest worker limit there is: past this it isn't a limit. */
 export const MAX_WORKER_LIMIT = 500;
 
@@ -78,6 +79,8 @@ export class Machine implements Capacity {
   private history: [number, number][] = [];
   /** The worker count everyone was last told. */
   private told = -1;
+  private hardware: HardwareSampler;
+  private sampling = false;
 
   constructor(
     dataDir: string,
@@ -88,11 +91,14 @@ export class Machine implements Capacity {
     private onState: (state: MachineState) => void,
   ) {
     this.path = path.join(dataDir, 'machine.json');
+    this.hardware = new HardwareSampler(dataDir);
     this.restore();
     this.memUsed = os.totalmem() - os.freemem();
   }
 
   start() {
+    if (this.timer) return;
+    this.hardware.start();
     // The memory now; the CPU takes two readings a while apart.
     this.last = cpuTimes();
     void this.sample(false);
@@ -102,6 +108,8 @@ export class Machine implements Capacity {
 
   stop() {
     clearInterval(this.timer);
+    this.timer = undefined;
+    this.hardware.stop();
   }
 
   /** The most workers the office takes, or undefined for no limit. */
@@ -129,6 +137,8 @@ export class Machine implements Capacity {
       cores: os.cpus().length,
       memUsed: this.memUsed,
       memTotal,
+      ...this.hardware.snapshot(),
+      sampleMs: SAMPLE_MS,
       history: this.history.slice(),
       pressure: this.pressure(memTotal),
       workers: this.count(),
@@ -168,19 +178,23 @@ export class Machine implements Capacity {
   }
 
   private async sample(cpu = true) {
-    if (cpu) {
-      const now = cpuTimes();
-      const total = now.total - this.last.total;
-      if (total > 0) this.cpu = Math.max(0, Math.min(100, Math.round((1 - (now.idle - this.last.idle) / total) * 100)));
-      this.last = now;
-    }
-    const memTotal = os.totalmem();
-    this.memUsed = Math.max(0, memTotal - (await availableMemory()));
-    if (cpu) {
-      this.history.push([this.cpu, memTotal ? Math.round((this.memUsed / memTotal) * 100) : 0]);
-      if (this.history.length > HISTORY) this.history.shift();
-    }
-    this.emit();
+    if (this.sampling) return;
+    this.sampling = true;
+    try {
+      if (cpu) {
+        const now = cpuTimes();
+        const total = now.total - this.last.total;
+        if (total > 0) this.cpu = Math.max(0, Math.min(100, Math.round((1 - (now.idle - this.last.idle) / total) * 100)));
+        this.last = now;
+      }
+      const memTotal = os.totalmem();
+      this.memUsed = Math.max(0, memTotal - (await availableMemory()));
+      if (cpu) {
+        this.history.push([this.cpu, memTotal ? Math.round((this.memUsed / memTotal) * 100) : 0]);
+        if (this.history.length > HISTORY) this.history.shift();
+      }
+      this.emit();
+    } finally { this.sampling = false; }
   }
 
   private emit() {

@@ -4,6 +4,7 @@
 import { IS_MAC } from './termkeys';
 
 export const HELP_ROWS: readonly (readonly [string, string])[] = [
+  ['🎮 Gamepad', 'Native controller: LS walks, RS looks, A/✕ jumps, X/□ interacts, Y/△ finds the next worker, LB drops and RB prompts. Nearby blue hints show controller keycaps after you use the pad; keyboard/mouse restores keyboard hints. D-pad: left Changes, right PR, up Resume, down Label when offered; R3 opens all contextual actions. B/○ cancels; Start opens the menu. In windows, D-pad navigates, A selects, B closes and triggers scroll. Select a text field with A for the controller keyboard. BLOCKFALL: D-pad moves, A drops, X turns, Y reverses, LB holds and RB pauses.'],
   ['W A S D', 'Walk (hold Shift to run)'],
   ['Space', 'Jump'],
   ['☕', 'Press E at the coffee machine in the kitchen for a minute of quicker walking and higher jumps. Three cups in a row gives you the jitters'],

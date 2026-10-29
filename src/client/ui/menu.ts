@@ -51,6 +51,8 @@ export function panelHide(id: HudPanel): HTMLElement {
 }
 
 export interface Hud {
+  /** Features register actions after the shell is mounted. */
+  addAction(action: HudAction): void;
   /** Redraws the top bar for a change the store doesn't announce (voice, hanging a picture). */
   refresh(): void;
   toggleMenu(): void;
@@ -281,5 +283,8 @@ export function mountHud(actions: HudAction[], settings: Settings, save: () => v
   for (const t of ['workers', 'peers', 'issues', 'pulls', 'services', 'queue', 'meeting', 'upgrade', 'me', 'floors', 'signins'] as Topic[]) store.on(t, render);
   applyPanels();
   render();
-  return { refresh: render, toggleMenu };
+  return { refresh: render, toggleMenu, addAction(action: HudAction) {
+    if (actions.some(a => a.id === action.id)) throw new Error(`Duplicate HUD action: ${action.id}`);
+    actions.push(action); render();
+  } };
 }

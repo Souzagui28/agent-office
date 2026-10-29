@@ -1,0 +1,9 @@
+#hint .pad-secondary { display: none; }
+.using-gamepad .crosshair .look-hint { display: none !important; }
+.pad-actions .body { display: grid; gap: 8px; }
+.pad-action { text-align: left; }
+.pad-keyboard-grid { display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 5px; }
+.pad-keyboard-grid .btn { min-width: 0; padding: 8px 4px; }
+.pad-keyboard-tools { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+.pad-text-preview { white-space: pre-wrap; overflow-wrap: anywhere; min-height: 48px; max-height: 120px; overflow: auto; padding: 10px; margin-bottom: 12px; border: 2px solid var(--ink); border-radius: 8px; }
+#modal-root :focus-visible, .using-gamepad #modal-root :focus { outline: 3px solid #e58d38; outline-offset: 3px; }

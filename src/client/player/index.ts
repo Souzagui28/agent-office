@@ -152,7 +152,7 @@ export class PlayerController extends PlayerInput {
 
   update(dt: number) {
     dt = Math.min(dt, 0.05);
-    const k = this.keys;
+    const k = { has: (code: string) => this.keys.has(code) || this.padKeys.has(code) };
     if (this.rig) {
       this.rig(dt);
       this.vy = 0;
@@ -164,7 +164,7 @@ export class PlayerController extends PlayerInput {
       return;
     }
     if (this.seat) {
-      if (!this.enabled || !GET_UP.some((c) => k.has(c))) {
+      if (!this.enabled || (!GET_UP.some((c) => k.has(c)) && !this.padX && !this.padY)) {
         this.moving = false;
         this.facing = this.seat.rotY;
         this.jitterT += dt;
@@ -174,8 +174,8 @@ export class PlayerController extends PlayerInput {
       this.stand();
       this.onStand?.();
     }
-    let ix = 0;
-    let iz = 0;
+    let ix = this.enabled ? this.padX : 0;
+    let iz = this.enabled ? this.padY : 0;
     if (this.enabled) {
       if (k.has('KeyW') || k.has('ArrowUp')) iz -= 1;
       if (k.has('KeyS') || k.has('ArrowDown')) iz += 1;
@@ -192,7 +192,7 @@ export class PlayerController extends PlayerInput {
     if (this.path && this.enabled) this.followPath(dt);
     if (this.view === 'first') this.facing = Math.atan2(Math.sin(this.camYaw + Math.PI), Math.cos(this.camYaw + Math.PI));
     if (steering) {
-      const len = Math.hypot(ix, iz);
+      const len = Math.max(1, Math.hypot(ix, iz));
       ix /= len;
       iz /= len;
       // Camera-relative: "forward" is where the camera looks.

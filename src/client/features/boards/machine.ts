@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import type { MachineState } from '../../../shared/protocol';
 import { officeFull } from '../../../shared/machine';
+import { drawGpu, drawStorage } from './hardware';
 
 const FONT = 'Nunito, ui-rounded, system-ui, sans-serif';
 const INK = '#1b1d2e';
@@ -28,8 +29,8 @@ export class MachineTexture {
 
   constructor() {
     // The screen's own shape (MACHINE_MONITOR is 2.3 × 1.3 m).
-    this.canvas.width = 920;
-    this.canvas.height = 520;
+    this.canvas.width = 1600;
+    this.canvas.height = 900;
     this.ctx = this.canvas.getContext('2d')!;
     this.texture = new THREE.CanvasTexture(this.canvas);
     this.texture.colorSpace = THREE.SRGBColorSpace;
@@ -64,11 +65,15 @@ export class MachineTexture {
     g.fillText(status[0], W - 30 - (tw + 32) / 2, 60);
 
     const memPct = s.memTotal ? Math.round((s.memUsed / s.memTotal) * 100) : 0;
-    this.panel(30, 100, 415, 'CPU', s.cpu, s.cores ? `${s.cores} core${s.cores === 1 ? '' : 's'}` : '', s.history.map(([c]) => c));
-    this.panel(475, 100, 415, 'Memory', memPct, s.memTotal ? `${fmtGb(s.memUsed)} of ${fmtGb(s.memTotal)}` : '', s.history.map(([, m]) => m));
+    this.panel(40, 100, 740, 'CPU', s.cpu, s.cores ? `${s.cores} core${s.cores === 1 ? '' : 's'}` : '', s.history.map(([c]) => c));
+    this.panel(820, 100, 740, 'Memory', memPct, s.memTotal ? `${fmtGb(s.memUsed)} of ${fmtGb(s.memTotal)}` : '', s.history.map(([, m]) => m));
+    drawStorage(g, 40, 440, 740, s.storage);
+    const gpus = s.gpus ?? [];
+    const gpu = gpus[Math.floor(Date.now() / 8000) % Math.max(1, gpus.length)];
+    drawGpu(g, 820, 440, 740, gpu, s.gpuStatus, gpus.length);
 
     // Footer: the workers, one pip each, against the limit.
-    const y = 440;
+    const y = 840;
     g.textAlign = 'left';
     g.font = `800 32px ${FONT}`;
     g.fillStyle = '#ffffff';
@@ -84,6 +89,10 @@ export class MachineTexture {
         g.fill();
       }
     }
+    g.textAlign = 'right';
+    g.fillStyle = MUTED;
+    g.font = `700 26px ${FONT}`;
+    g.fillText(`CPU / RAM / GPU · ${((s.sampleMs ?? 5000) / 1000).toFixed(1)} s`, W - 40, 884);
     this.texture.needsUpdate = true;
   }
 

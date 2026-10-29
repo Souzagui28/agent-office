@@ -248,3 +248,66 @@ test('a buzz on you walks you further and jumps you higher', (t) => {
   }
   assert.ok(highest[1] > highest[0] * 1.4, `jumped ${highest[1]} against ${highest[0]}`);
 });
+
+
+test('gamepad movement preserves analog speed and caps diagonal speed', (t) => {
+  const { player, frames } = controller(t, []);
+  player.setGamepad(0, -0.25, []);
+  frames(60);
+  assert.ok(Math.abs(player.pos.z + 4.6 * 0.25) < 1e-6);
+  player.pos.set(0, 0, 0);
+  player.setGamepad(1, -1, []);
+  frames(60);
+  assert.ok(Math.abs(Math.hypot(player.pos.x, player.pos.z) - 4.6) < 1e-6);
+});
+
+test('clearing a controller preserves held keyboard input', (t) => {
+  const { player, keys, frames } = controller(t, []);
+  keys('KeyW');
+  player.setGamepad(0, -0.5, ['ShiftLeft']);
+  player.setGamepad(0, 0, []);
+  frames(30);
+  assert.ok(Math.abs(player.pos.z + 2.3) < 1e-6);
+  assert.equal(player.running, false);
+});
+
+test('gamepad cannot walk, jump or look under an open window', (t) => {
+  const { player, frames } = controller(t, []);
+  player.enabled = false;
+  player.setGamepad(1, -1, ['Space', 'ShiftLeft']);
+  const yaw = player.camYaw;
+  const pitch = player.lookPitch;
+  player.lookGamepad(1, 1);
+  frames(30);
+  assert.deepEqual(player.pos.toArray(), [0, 0, 0]);
+  assert.equal(player.camYaw, yaw);
+  assert.equal(player.lookPitch, pitch);
+});
+
+test('analog steering cancels an automatic walk and gets up from a seat', (t) => {
+  const { player, frames } = controller(t, []);
+  let cancelled = false;
+  player.onPathEnd = (why) => cancelled = why === 'cancelled';
+  player.walkPath([{ x: 10, z: 10 }]);
+  player.setGamepad(0, -0.2, []);
+  frames(1);
+  assert.equal(cancelled, true);
+  player.sit(seatPlace(SEATING_BY_ID.get('couch')!, 2));
+  frames(1);
+  assert.equal(player.seat, null);
+});
+
+test('controller actions reach activities and camera pitch stays within bounds', (t) => {
+  const { player } = controller(t, []);
+  player.setGamepad(0.4, -0.3, ['Space', 'ShiftLeft']);
+  assert.equal(player.holding('KeyW'), true);
+  assert.equal(player.holding('KeyD'), true);
+  assert.equal(player.holding('Space'), true);
+  player.lookGamepad(0, 20);
+  assert.equal(player.lookPitch, -1.45);
+  player.view = 'third';
+  player.lookGamepad(0, 20);
+  assert.equal(player.camPitch, 1.3);
+  player.clearKeys();
+  assert.equal(player.holding('KeyW', 'KeyD', 'Space'), false);
+});

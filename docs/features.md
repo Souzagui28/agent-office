@@ -74,8 +74,6 @@ Everything in the office, room by room. Back to the [README](../README.md).
 
 ## Machine monitor
 
-The wall monitor keeps its existing location and dark display style, with four cards: CPU, Memory, Storage and GPU. CPU and RAM include the last five minutes of history. CPU/RAM are sampled every 500 ms. NVIDIA GPU telemetry is collected by a single persistent `nvidia-smi --loop-ms=500` process and broadcast by the office, so additional browsers do not start extra collectors. The monitor shows GPU model, load, used/total VRAM, temperature, draw/power limit and fan percentage. On multi-GPU hosts it rotates the GPU card every eight seconds.
+The wall monitor keeps its existing location and dark display style. CPU and RAM include the last five minutes of history and are sampled every 500 ms. GPU collection has been removed after host kernel lockups observed while the NVIDIA collector was present. The office does not launch `nvidia-smi`, retry it, or query an alternative GPU API. The GPU card reports unavailable.
 
-Storage is the filesystem containing the office's project/data directory. Free space uses filesystem `bavail` (space available to the current user, excluding reserved blocks), refreshed every 30 seconds. It does not add capacities from unrelated mounted disks.
-
-If the NVIDIA tool/driver is unavailable, GPU data is labeled unavailable; individual unsupported metrics show a dash. Readings older than three seconds or from an exited collector are marked stale. The office continues to work. The collector is stopped with the office and retried at most every 30 seconds on failure. No vendor API key or external service is used.
+Storage is the filesystem containing the office's project/data directory. Free space uses filesystem `bavail` (space available to the current user, excluding reserved blocks), refreshed every 30 seconds. It does not add capacities from unrelated mounted disks. Disk errors leave storage unavailable without stopping the office.

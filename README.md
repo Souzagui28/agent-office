@@ -362,7 +362,7 @@ deploy/coolify.sh ssh 'node /opt/agent-office/bin/agent-office.js accounts invit
 
 ## Live hardware monitor
 
-The existing wall monitor shows CPU, RAM, available project-disk space and NVIDIA GPU telemetry (utilization, VRAM, temperature, power and fan). CPU/RAM/GPU update every 0.5 seconds; disk space updates every 30 seconds. GPU collection uses one persistent `nvidia-smi` process, and unavailable or stale readings are labeled. See [machine monitor](docs/features.md#machine-monitor).
+The existing wall monitor shows CPU, RAM and available project-disk space. CPU/RAM update every 0.5 seconds; disk space updates every 30 seconds. GPU polling through `nvidia-smi` has been removed after host kernel lockups; the GPU card reports unavailable. See [machine monitor](docs/features.md#machine-monitor).
 
 ## Controls
 
